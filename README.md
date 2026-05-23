@@ -1,7 +1,7 @@
 -------------------
-# ALUMNOS:
+# GRUPO: CTRLV
 -------------------
-
+## ALUMNOS:
 ### FRANCISCO ANTONIO GONZALEZ 
 ### VIRGINIA DEL VALLE VERA HERRERA
 ### ISMAEL ALEJANDRO FLORES
