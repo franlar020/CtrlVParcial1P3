@@ -80,3 +80,34 @@ CASO DE PRUEBA 4: Alerta de Vehículo No Encontrado (Patente Inexistente)
   - Response body (Cuerpo): 
     "Alarma del Sistema: Vehículo No Encontrado."
 ================================================================================
+
+
+--------------------------------------------------------------------------------
+PAQUETE DE SERVICIO (LOGICA OPERATIVA Y MOCK DE DATOS EN MEMORIA)
+--------------------------------------------------------------------------------
+
+
+* AlquilerService (Estado y Algoritmos):
+  - Estado en Memoria: Declara dos colecciones privadas 'List<EstacionAnclaje>' y 
+    'List<Usuario>' que actúan como la persistencia transitoria de la aplicación.
+  - Constructor (Mock): Inicializa datos por defecto (usuarios regular/premium, 
+    monopatín con batería óptima y bicicleta con batería baja cargados en una 
+    estación central) para habilitar las pruebas inmediatas desde la consola web.
+
+* DesacopladorPagosFactory, ProcesadorPago y Estrategias:
+
+  La interfaz 'ProcesadorPago' fuerza la firma del método 'procesar(double monto)'. 
+  Las clases 'PagoTarjeta' y 'PagoBilletera' implementan dicho comportamiento 
+  emulando el éxito de la transacción mediante salidas por la consola estándar. 
+  La factoría abstrae la lógica de instanciación del servicio web a través de un 
+  método estático basado en condicionales simples.
+
+
+* AlquilerController:
+  Clase configurada bajo la anotación @RestController con el prefijo base de 
+  ruta '/api/alquileres'. 
+  - Inyección: Declara un atributo privado de tipo 'AlquilerService' acoplado de 
+    forma automática por el framework mediante @Autowired.
+  - Endpoint HTTP: Expone un método GET en la sub-ruta '/desbloquear' parametrizado 
+    con la anotación @RequestParam. Esto fuerza a que los datos de entrada del 
+    'AlquilerRequest' viajen embebidos dentro del cuerpo de la petición en formato JSON.
