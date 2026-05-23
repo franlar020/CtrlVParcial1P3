@@ -12,7 +12,8 @@
 </p>
 
 --------------------------------------------------------------------------------
-CASO DE PRUEBA 1: Flujo Exitoso (Usuario REGULAR + Monopatín con batería óptima)
+# CASO DE PRUEBA 1: Flujo Exitoso (Usuario REGULAR + Monopatín con batería óptima)
+## URL: http://localhost:8080/swagger-ui/index.html
 --------------------------------------------------------------------------------
 * Validar que el sistema localiza el vehículo, calcula la tarifa base 
   sin descuento y procesa el pago simulado de forma correcta.
@@ -27,7 +28,7 @@ CASO DE PRUEBA 1: Flujo Exitoso (Usuario REGULAR + Monopatín con batería ópti
     "Desbloqueo Exitoso. Vehículo Patente: AAA111 | Monto cobrado: $500.0"
 
 --------------------------------------------------------------------------------
-CASO DE PRUEBA 2: Alerta de Batería Insuficiente (Bicicleta < 15% de carga)
+# CASO DE PRUEBA 2: Alerta de Batería Insuficiente (Bicicleta < 15% de carga)
 --------------------------------------------------------------------------------
 
 * Verificar que se interrumpe la operación inmediatamente si el rodado 
@@ -46,7 +47,7 @@ CASO DE PRUEBA 2: Alerta de Batería Insuficiente (Bicicleta < 15% de carga)
     "Alarma del Sistema: Batería Insuficiente. Operación bloqueada."
 
 --------------------------------------------------------------------------------
-CASO DE PRUEBA 3: Aplicación de Beneficio Premium (Usuario PREMIUM)
+# CASO DE PRUEBA 3: Aplicación de Beneficio Premium (Usuario PREMIUM)
 --------------------------------------------------------------------------------
 * Validar que el motor de cálculo matemático aplique de manera estricta 
   el descuento del 15% sobre el precio del vehículo.
@@ -66,7 +67,7 @@ CASO DE PRUEBA 3: Aplicación de Beneficio Premium (Usuario PREMIUM)
 
 
 --------------------------------------------------------------------------------
-CASO DE PRUEBA 4: Alerta de Vehículo No Encontrado (Patente Inexistente)
+# CASO DE PRUEBA 4: Alerta de Vehículo No Encontrado (Patente Inexistente)
 --------------------------------------------------------------------------------
 
 * Validar que el bucle secuencial iterativo recorra todas las estaciones 
@@ -87,7 +88,7 @@ CASO DE PRUEBA 4: Alerta de Vehículo No Encontrado (Patente Inexistente)
 
 
 --------------------------------------------------------------------------------
-PAQUETE DE SERVICIO (LOGICA OPERATIVA Y MOCK DE DATOS EN MEMORIA)
+# PAQUETE DE SERVICIO (LOGICA OPERATIVA Y MOCK DE DATOS EN MEMORIA)
 --------------------------------------------------------------------------------
 
 
