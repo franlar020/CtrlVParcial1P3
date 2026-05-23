@@ -7,6 +7,10 @@
 ### ISMAEL ALEJANDRO FLORES
 ### VALENTINO LEMOR
 
+<p align="center">
+  <img src="imagenesparcial1/diagrama.jpeg" alt="Diagrama de clases" width="600"/>
+</p>
+
 --------------------------------------------------------------------------------
 CASO DE PRUEBA 1: Flujo Exitoso (Usuario REGULAR + Monopatín con batería óptima)
 --------------------------------------------------------------------------------
