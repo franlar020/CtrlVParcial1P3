@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import unlar.edu.ar.CtrlVParcial1P3.dto.VehiculoResponseDTO;
 import unlar.edu.ar.CtrlVParcial1P3.service.AlquilerService;
 import unlar.edu.ar.CtrlVParcial1P3.service.FlotaService;
+import unlar.edu.ar.CtrlVParcial1P3.model.Vehiculo;
 
 import java.util.List;
 
