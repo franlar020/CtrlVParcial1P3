@@ -1,26 +1,25 @@
 package unlar.edu.ar.CtrlVParcial1P3.service;
 
-
-import unlar.edu.ar.CtrlVParcial1P3.model.*;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
+import unlar.edu.ar.CtrlVParcial1P3.dto.AlquilerResponseDTO;
+import unlar.edu.ar.CtrlVParcial1P3.model.Vehiculo;
+import unlar.edu.ar.CtrlVParcial1P3.model.BicicletaElectrica;
+import unlar.edu.ar.CtrlVParcial1P3.model.Monopatin;
+import unlar.edu.ar.CtrlVParcial1P3.model.strategy.EstrategiaTarifa;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class AlquilerService {
 
-    // Almacenamiento temporal nativo en memoria
-    private List<EstacionAnclaje> estaciones = new ArrayList<>();
-    private List<Usuario> usuarios = new ArrayList<>();
+    // Optimización algorítmica: Estructura clave-valor para acceso O(1)
+    private Map<String, Vehiculo> inventarioGlobal = new HashMap<>();
 
-    // Constructor para inicializar datos de prueba
     public AlquilerService() {
-        // Mock de datos para testing de la mesa de examen
-        Usuario u1 = new Usuario("USR01", "Juan Perez", "REGULAR");
-        Usuario u2 = new Usuario("USR02", "Ana Lopez", "PREMIUM");
-        usuarios.add(u1);
-        usuarios.add(u2);
-
+        // Inicialización de la memoria estática exigida
         Monopatin m1 = new Monopatin(true);
         m1.setPatente("AAA111");
         m1.setPorcentajeBateria(80);
@@ -28,80 +27,56 @@ public class AlquilerService {
 
         BicicletaElectrica b1 = new BicicletaElectrica(1500);
         b1.setPatente("BBB222");
-        b1.setPorcentajeBateria(10); // Genera alerta de batería insuficiente (<15%)
+        b1.setPorcentajeBateria(10);
         b1.setTarifaFijaBase(600.0);
 
-        EstacionAnclaje est1 = new EstacionAnclaje();
-        est1.setNombreUnico("Estacion-Central");
-        est1.getVehiculosDisponibles().add(m1);
-        est1.getVehiculosDisponibles().add(b1);
-        
-        estaciones.add(est1);
+        inventarioGlobal.put(m1.getPatente(), m1);
+        inventarioGlobal.put(b1.getPatente(), b1);
     }
 
-    public String procesarDesbloqueo(AlquilerRequest request) {
-        Usuario usuario = buscarUsuario(request.getIdUsuario());
-        if (usuario == null) {
-            return "Error de negocio: Usuario no registrado.";
-        }
-
-        // 1. Localizar el vehículo dentro de la estación a través de su patente (Búsqueda iterativa secuencial)
-        EstacionAnclaje estacionContenedora = null;
-        Vehiculo vehiculoEncontrado = null;
-
-        for (int i = 0; i < estaciones.size(); i++) {
-            EstacionAnclaje est = estaciones.get(i);
-            for (int j = 0; j < est.getVehiculosDisponibles().size(); j++) {
-                Vehiculo v = est.getVehiculosDisponibles().get(j);
-                if (v.getPatente().equalsIgnoreCase(request.getPatente())) {
-                    vehiculoEncontrado = v;
-                    estacionContenedora = est;
-                    break;
-                }
-            }
-            if (vehiculoEncontrado != null) break;
-        }
-
-        // Regla de Alerta 1: Vehículo No Encontrado
-        if (vehiculoEncontrado == null) {
-            return "Alarma del Sistema: Vehículo No Encontrado.";
-        }
-
-        // 2. Validar que el nivel de batería sea apto para circular
-        // Regla de Alerta 2: Batería Insuficiente (< 15%)
-        if (vehiculoEncontrado.getPorcentajeBateria() < 15) {
-            return "Alarma del Sistema: Batería Insuficiente. Operación bloqueada.";
-        }
-
-        // 3. Calcular el importe final del desbloqueo considerando las características del usuario
-        double importeFinal = vehiculoEncontrado.getTarifaFijaBase();
-        if (usuario.getTipoUsuario().equalsIgnoreCase("PREMIUM")) {
-            // Aplicar beneficio exclusivo: Descuento fijo del 15% por ejemplo
-            importeFinal = importeFinal * 0.85;
-        }
-
-        // 4 y 5. Desacoplamiento de la creación de pagos y efectuar cobro
-        ProcesadorPago procesador = DesacopladorPagosFactory.crearProcesador(request.getMetodoPago());
-        if (procesador == null) {
-            return "Error de negocio: Medio de pago no soportado.";
-        }
+    public String desbloquearVehiculo(String patente) {
+        Vehiculo vehiculo = inventarioGlobal.get(patente);
         
-        procesador.procesar(importeFinal);
+        if (vehiculo == null) {
+            throw new RuntimeException("Vehículo No Encontrado"); // Será capturado por el GlobalExceptionHandler
+        }
 
-        // Remover el vehículo de la estación tras el alquiler exitoso
-        estacionContenedora.getVehiculosDisponibles().remove(vehiculoEncontrado);
+        // Transición gestionada por el Patrón State
+        boolean transicionValida = vehiculo.getEstado().iniciarViaje(vehiculo);
+        
+        if (!transicionValida) {
+            throw new RuntimeException("Operación inválida. Estado actual: " + vehiculo.getEstado().getNombreEstado());
+        }
 
-        // 6. Retornar respuesta exitosa detallando el rodado y el monto cobrado
-        return "Desbloqueo Exitoso. Vehículo Patente: " + vehiculoEncontrado.getPatente() 
-                + " | Monto cobrado: $" + importeFinal;
+        return "Desbloqueo exitoso. Patente: " + vehiculo.getPatente();
     }
 
-    private Usuario buscarUsuario(String idUsuario) {
-        for (int i = 0; i < usuarios.size(); i++) {
-            if (usuarios.get(i).getIdUsuario().equalsIgnoreCase(idUsuario)) {
-                return usuarios.get(i);
-            }
+    public AlquilerResponseDTO finalizarAlquiler(String patente, int minutos, EstrategiaTarifa estrategia) {
+        Vehiculo vehiculo = inventarioGlobal.get(patente);
+
+        if (vehiculo == null) {
+            throw new RuntimeException("Vehículo No Encontrado");
         }
-        return null;
+
+        // Validación de transición de estado
+        boolean transicionValida = vehiculo.getEstado().finalizarViaje(vehiculo);
+        if (!transicionValida) {
+            throw new RuntimeException("No se puede finalizar. El vehículo no se encuentra en viaje.");
+        }
+
+        // Aplicación del Patrón Strategy para el cálculo económico
+        double costoFinal = estrategia.calcularCosto(vehiculo.getTarifaFijaBase(), minutos);
+
+        return new AlquilerResponseDTO(
+                vehiculo.getPatente(),
+                minutos,
+                costoFinal,
+                vehiculo.getEstado().getNombreEstado()
+        );
+    }
+
+    // Método auxiliar para el servicio de ordenamiento
+    public List<Vehiculo> obtenerTodos() {
+        return new ArrayList<>(inventarioGlobal.values());
     }
 }
