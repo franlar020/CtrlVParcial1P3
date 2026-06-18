@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class Vehiculo {
+public abstract class Vehiculo implements Comparable<Vehiculo> {
     private String patente;
     private int porcentajeBateria; // 0 a 100
     private double tarifaFijaBase;
