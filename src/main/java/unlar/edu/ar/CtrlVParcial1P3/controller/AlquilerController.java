@@ -1,14 +1,11 @@
 package unlar.edu.ar.CtrlVParcial1P3.controller;
 
-
-import unlar.edu.ar.CtrlVParcial1P3.model.AlquilerRequest;
-import unlar.edu.ar.CtrlVParcial1P3.service.AlquilerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import unlar.edu.ar.CtrlVParcial1P3.dto.AlquilerResponseDTO;
+import unlar.edu.ar.CtrlVParcial1P3.service.AlquilerService;
+import unlar.edu.ar.CtrlVParcial1P3.model.strategy.*;
 
 @RestController
 @RequestMapping("/api/alquileres")
@@ -17,16 +14,29 @@ public class AlquilerController {
     @Autowired
     private AlquilerService alquilerService;
 
-    @GetMapping("/desbloquear")
-    public ResponseEntity<String> desbloquearVehiculo(@RequestParam String idUsuario, @RequestParam String patente, @RequestParam String metodoPago) {
-        AlquilerRequest request = new AlquilerRequest(idUsuario, patente, metodoPago);
-        String resultado = alquilerService.procesarDesbloqueo(request);
-        
-        // Manejo de códigos de respuesta HTTP según la lógica devuelta por el servicio
-        if (resultado.contains("Alarma") || resultado.contains("Error")) {
-            return ResponseEntity.badRequest().body(resultado);
-        }
-        
+    @PostMapping("/desbloquear")
+    public ResponseEntity<String> desbloquear(@RequestParam String patente) {
+        String resultado = alquilerService.desbloquearVehiculo(patente);
         return ResponseEntity.ok(resultado);
+    }
+
+    @PostMapping("/finalizar")
+    public ResponseEntity<AlquilerResponseDTO> finalizar(
+            @RequestParam String patente,
+            @RequestParam int minutos,
+            @RequestParam String condicionTarifa) {
+
+        // Selección dinámica de la estrategia en tiempo de ejecución
+        EstrategiaTarifa estrategia;
+        if (condicionTarifa.equalsIgnoreCase("PICO")) {
+            estrategia = new TarifaHoraPico();
+        } else if (condicionTarifa.equalsIgnoreCase("CLIMA")) {
+            estrategia = new TarifaTemporalClimatico();
+        } else {
+            estrategia = new TarifaEstandar();
+        }
+
+        AlquilerResponseDTO response = alquilerService.finalizarAlquiler(patente, minutos, estrategia);
+        return ResponseEntity.ok(response);
     }
 }
