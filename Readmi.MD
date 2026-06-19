@@ -8,106 +8,84 @@ ISMAEL ALEJANDRO FLORES
 VALENTINO LEMOR
 
 --------------------------------------------------------------------------------
-CASO DE PRUEBA 1: Flujo Exitoso (Usuario REGULAR + Monopatín con batería óptima)
+CASOS DE PRUEBA REST: ECORIDE PRO (UNIDADES 3 Y 4)
 --------------------------------------------------------------------------------
-* Validar que el sistema localiza el vehículo, calcula la tarifa base 
-  sin descuento y procesa el pago simulado de forma correcta.
 
-  "idUsuario": "USR01",
-  "patente": "AAA111",
-  "metodoPago": "TARJETA"
+CASO DE PRUEBA 1: Flujo Exitoso y Transición de Estado (Patrón State)
+--------------------------------------------------------------------------------
+* Validar que el sistema localiza el vehículo en O(1) y efectúa la transición de 
+  fases ("EN_ESPERA" a "EN_VIAJE") bloqueando los accesos inválidos subsecuentes.
+
+* Endpoint: POST /api/alquileres/desbloquear
+* Parámetros (Query Params): 
+  - patente: "AAA111"
 
 * Verificar la sección 'Responses':
   - Code (Código HTTP): 200 OK
-  - Response body (Cuerpo): 
-    "Desbloqueo Exitoso. Vehículo Patente: AAA111 | Monto cobrado: $500.0"
+  - Response body: "Desbloqueo exitoso. Patente: AAA111"
 
+CASO DE PRUEBA 2: Cálculo Adaptativo de Tarifa (Patrón Strategy)
 --------------------------------------------------------------------------------
-CASO DE PRUEBA 2: Alerta de Batería Insuficiente (Bicicleta < 15% de carga)
---------------------------------------------------------------------------------
+* Validar que el motor de cálculo inyecte la estrategia correcta en tiempo de 
+  ejecución y procese el recargo por horario pico o temporal climático.
 
-* Verificar que se interrumpe la operación inmediatamente si el rodado 
-  no cumple con el nivel mínimo apto para circular.
-* Reemplazar el contenido del 'Request body' por los siguientes DATOS:
-
-
-  "idUsuario": "USR01",
-  "patente": "BBB222",
-  "metodoPago": "BILLETERA"
-
-
-* Verificar la sección 'Responses':
-  - Code (Código HTTP): 400 Bad Request
-  - Response body (Cuerpo): 
-    "Alarma del Sistema: Batería Insuficiente. Operación bloqueada."
-
---------------------------------------------------------------------------------
-CASO DE PRUEBA 3: Aplicación de Beneficio Premium (Usuario PREMIUM)
---------------------------------------------------------------------------------
-* Validar que el motor de cálculo matemático aplique de manera estricta 
-  el descuento del 15% sobre el precio del vehículo.
-* Reemplazar el contenido del 'Request body' con los siguientes DATOS:
-
-
-  "idUsuario": "USR02",
-  "patente": "AAA111",
-  "metodoPago": "TARJETA"
-
+* Endpoint: POST /api/alquileres/finalizar
+* Parámetros (Query Params):
+  - patente: "AAA111"
+  - minutos: "30"
+  - condicionTarifa: "PICO"
 
 * Verificar la sección 'Responses':
   - Code (Código HTTP): 200 OK
-  - Response body (Cuerpo): 
-    "Desbloqueo Exitoso. Vehículo Patente: AAA111 | Monto cobrado: $425.0"
-    (Cálculo matemático puro: $500.0 * 0.85 = $425.0)
+  - Response body (JSON): 
+    {
+      "patente": "AAA111",
+      "tiempoTranscurrido": 30,
+      "costoFinal": 21000.0,
+      "faseActual": "EN_ESPERA"
+    }
 
-
+CASO DE PRUEBA 3: Alerta de Vehículo No Encontrado (Manejo Profesional de Errores)
 --------------------------------------------------------------------------------
-CASO DE PRUEBA 4: Alerta de Vehículo No Encontrado (Patente Inexistente)
---------------------------------------------------------------------------------
+* Validar que la búsqueda optimizada en el mapa rechace identificadores inexistentes
+  y dispare el manejador global de excepciones estandarizado.
 
-* Validar que el bucle secuencial iterativo recorra todas las estaciones 
-  y dispare el mensaje preventivo al no hallar coincidencia exacta.
-* Reemplazar el contenido del 'Request body' por los siguientes DATOS:
+* Endpoint: POST /api/alquileres/desbloquear
+* Parámetros (Query Params):
+  - patente: "XYZ999"
 
-
-  "idUsuario": "USR01",
-  "patente": "XYZ999",
-  "metodoPago": "TARJETA"
-
-* Presionar el botón: [Execute].
 * Verificar la sección 'Responses':
-  - Code (Código HTTP): 400 Bad Request
-  - Response body (Cuerpo): 
-    "Alarma del Sistema: Vehículo No Encontrado."
-================================================================================
-
+  - Code (Código HTTP): 404 Not Found
+  - Response body (JSON): Objeto de error estructurado con 'timestamp', 'status' y 
+    el mensaje "Alarma del Sistema: Vehículo No Encontrado. Patente: XYZ999".
 
 --------------------------------------------------------------------------------
-PAQUETE DE SERVICIO (LOGICA OPERATIVA Y MOCK DE DATOS EN MEMORIA)
+ARQUITECTURA DEL SISTEMA (PATRONES DE DISEÑO Y EXPOSICIÓN DE DATOS)
 --------------------------------------------------------------------------------
 
+* Capa de Dominio (Model) - Patrones de Comportamiento Dinámico:
+  Implementación estricta de patrones de diseño de la Unidad 3. El Patrón STATE gobierna 
+  el ciclo de vida del vehículo mediante las implementaciones de la interfaz 
+  'EstadoVehiculo' ('EstadoEnEspera', 'EstadoEnViaje', 'EstadoEnReparacion'), eliminando 
+  las estructuras de control masivas. El Patrón STRATEGY inyecta los algoritmos 
+  adaptativos de cálculo de tarifa ('TarifaEstandar', 'TarifaHoraPico', 
+  'TarifaTemporalClimatico') desacoplando la lógica financiera del servicio principal.
 
-* AlquilerService (Estado y Algoritmos):
-  - Estado en Memoria: Declara dos colecciones privadas 'List<EstacionAnclaje>' y 
-    'List<Usuario>' que actúan como la persistencia transitoria de la aplicación.
-  - Constructor (Mock): Inicializa datos por defecto (usuarios regular/premium, 
-    monopatín con batería óptima y bicicleta con batería baja cargados en una 
-    estación central) para habilitar las pruebas inmediatas desde la consola web.
+* Capa de Servicios - Lógica Imperativa y Memoria Dinámica:
+  'AlquilerService' centraliza el control de negocio gestionando el diccionario en memoria 
+  (HashMap). 'FlotaService' y 'GpsService' aíslan la complejidad algorítmica de ordenamiento 
+  y deduplicación utilizando colecciones óptimas, estrictamente bajo paradigmas 
+  imperativos tradicionales sin inyección de expresiones Lambda.
 
-* DesacopladorPagosFactory, ProcesadorPago y Estrategias:
+* Controladores REST y Transferencia de Datos (DTO):
+  Aislamiento bidireccional total. Los Controladores ('AlquilerController' y 
+  'VehiculoController') exponen puntos de acceso seguros que delegan la lógica a los 
+  servicios e intersecan las salidas a través de los objetos 'AlquilerResponseDTO' y 
+  'VehiculoResponseDTO'. Esto previene fugas de metadatos de las entidades internas 
+  y asegura una exposición profesional hacia la red.
 
-  La interfaz 'ProcesadorPago' fuerza la firma del método 'procesar(double monto)'. 
-  Las clases 'PagoTarjeta' y 'PagoBilletera' implementan dicho comportamiento 
-  emulando el éxito de la transacción mediante salidas por la consola estándar. 
-  La factoría abstrae la lógica de instanciación del servicio web a través de un 
-  método estático basado en condicionales simples.
-
-
-* AlquilerController:
-  Clase configurada bajo la anotación @RestController con el prefijo base de 
-  ruta '/api/alquileres'. 
-  - Inyección: Declara un atributo privado de tipo 'AlquilerService' acoplado de 
-    forma automática por el framework mediante @Autowired.
-  - Endpoint HTTP: Expone un método GET en la sub-ruta '/desbloquear' parametrizado 
-    con la anotación @RequestParam. Esto fuerza a que los datos de entrada del 
-    'AlquilerRequest' viajen embebidos dentro del cuerpo de la petición en formato JSON.
+* Infraestructura de Excepciones:
+  Manejo estandarizado a través de 'GlobalExceptionHandler' (@RestControllerAdvice) 
+  que intercepta fallos de negocio puros ('ResourceNotFoundException', 
+  'InvalidVehicleStateException') mapeándolos a códigos de estado HTTP precisos (404, 409) 
+  en payloads JSON inmutables.
