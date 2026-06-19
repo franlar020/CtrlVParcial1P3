@@ -1,18 +1,20 @@
 package unlar.edu.ar.CtrlVParcial1P3.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import lombok.RequiredArgsConstructor;
 import unlar.edu.ar.CtrlVParcial1P3.dto.AlquilerResponseDTO;
 import unlar.edu.ar.CtrlVParcial1P3.service.AlquilerService;
 import unlar.edu.ar.CtrlVParcial1P3.model.strategy.*;
 
 @RestController
 @RequestMapping("/api/alquileres")
+@RequiredArgsConstructor
 public class AlquilerController {
 
-    @Autowired
-    private AlquilerService alquilerService;
+    private final AlquilerService alquilerService;
 
     @PostMapping("/desbloquear")
     public ResponseEntity<String> desbloquear(@RequestParam String patente) {
