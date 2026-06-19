@@ -8,6 +8,18 @@ ISMAEL ALEJANDRO FLORES
 VALENTINO LEMOR
 
 --------------------------------------------------------------------------------
+ANEXO TÉCNICO DE RENDIMIENTO 
+--------------------------------------------------------------------------------
+
+* ¿Por qué la nueva estructura de búsqueda es más rápida?
+  La reestructuración migró de una búsqueda lineal secuencial `O(N)` en listas `List<Vehiculo>` a una búsqueda de acceso directo en tiempo constante `O(1)` utilizando la estructura `HashMap<String, Vehiculo>`. La patente actúa como clave hash, permitiendo que el motor de ejecución recupere la instancia del vehículo instantáneamente, erradicando el cuello de botella sin importar si el volumen de la flota crece a cientos de miles de registros.
+
+* ¿Cómo el algoritmo de deduplicación evita bucles anidados?
+  Se reemplazó la validación manual `O(N^2)` por el uso de la estructura `HashSet`. Al iterar en una única pasada sobre el arreglo de reportes `O(N)`, el método nativo `add()` del Set inserta y valida la unicidad simultáneamente en tiempo constante `O(1)`. Esto resuelve la limpieza de datos eliminando por completo la saturación de CPU y memoria causada por las comparaciones redundantes.
+
+* ¿Cómo se resolvió el ordenamiento sin corromper la concurrencia?
+  Se implementó la interfaz `Comparable<Vehiculo>` dentro de la entidad base para establecer su criterio natural e intrínseco (Prioridad de Carga). Paralelamente, se aisló el criterio secundario creando la clase `ComparadorTarifaBase` mediante el patrón `Comparator`. Ambas implementaciones se ejecutan de manera estática y bajo demanda, garantizando un ordenamiento estable en `O(N log N)` sin alterar los atributos estructurales de la clase.
+--------------------------------------------------------------------------------
 CASOS DE PRUEBA REST: ECORIDE PRO (UNIDADES 3 Y 4)
 --------------------------------------------------------------------------------
 
