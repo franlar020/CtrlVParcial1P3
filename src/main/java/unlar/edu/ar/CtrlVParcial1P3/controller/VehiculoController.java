@@ -1,10 +1,12 @@
 package unlar.edu.ar.CtrlVParcial1P3.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
 import unlar.edu.ar.CtrlVParcial1P3.dto.VehiculoResponseDTO;
 import unlar.edu.ar.CtrlVParcial1P3.service.AlquilerService;
 import unlar.edu.ar.CtrlVParcial1P3.service.FlotaService;
@@ -14,13 +16,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/vehiculos")
+@RequiredArgsConstructor
 public class VehiculoController {
 
-    @Autowired
-    private FlotaService flotaService;
-
-    @Autowired
-    private AlquilerService alquilerService;
+    private final FlotaService flotaService; 
+    private final AlquilerService alquilerService; 
 
     // Aplica ordenamiento natural O(N log N)
     @GetMapping("/prioridad-carga")
