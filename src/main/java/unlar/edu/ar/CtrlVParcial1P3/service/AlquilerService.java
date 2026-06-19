@@ -2,6 +2,8 @@ package unlar.edu.ar.CtrlVParcial1P3.service;
 
 import org.springframework.stereotype.Service;
 import unlar.edu.ar.CtrlVParcial1P3.dto.AlquilerResponseDTO;
+import unlar.edu.ar.CtrlVParcial1P3.exception.InvalidVehicleStateException;
+import unlar.edu.ar.CtrlVParcial1P3.exception.ResourceNotFoundException;
 import unlar.edu.ar.CtrlVParcial1P3.model.Vehiculo;
 import unlar.edu.ar.CtrlVParcial1P3.model.BicicletaElectrica;
 import unlar.edu.ar.CtrlVParcial1P3.model.Monopatin;
@@ -34,37 +36,38 @@ public class AlquilerService {
         inventarioGlobal.put(b1.getPatente(), b1);
     }
 
-    public String desbloquearVehiculo(String patente) {
+public String desbloquearVehiculo(String patente) {
         Vehiculo vehiculo = inventarioGlobal.get(patente);
         
         if (vehiculo == null) {
-            throw new RuntimeException("Vehículo No Encontrado"); // Será capturado por el GlobalExceptionHandler
+            // Refactorizado a ResourceNotFoundException
+            throw new ResourceNotFoundException("Alarma del Sistema: Vehículo No Encontrado. Patente: " + patente); 
         }
 
-        // Transición gestionada por el Patrón State
         boolean transicionValida = vehiculo.getEstado().iniciarViaje(vehiculo);
         
         if (!transicionValida) {
-            throw new RuntimeException("Operación inválida. Estado actual: " + vehiculo.getEstado().getNombreEstado());
+            // Refactorizado a InvalidVehicleStateException
+            throw new InvalidVehicleStateException("Operación bloqueada. Estado actual: " + vehiculo.getEstado().getNombreEstado());
         }
 
         return "Desbloqueo exitoso. Patente: " + vehiculo.getPatente();
     }
 
-    public AlquilerResponseDTO finalizarAlquiler(String patente, int minutos, EstrategiaTarifa estrategia) {
+public AlquilerResponseDTO finalizarAlquiler(String patente, int minutos, EstrategiaTarifa estrategia) {
         Vehiculo vehiculo = inventarioGlobal.get(patente);
 
         if (vehiculo == null) {
-            throw new RuntimeException("Vehículo No Encontrado");
+            // Refactorizado a ResourceNotFoundException
+            throw new ResourceNotFoundException("Alarma del Sistema: Vehículo No Encontrado. Patente: " + patente);
         }
 
-        // Validación de transición de estado
         boolean transicionValida = vehiculo.getEstado().finalizarViaje(vehiculo);
         if (!transicionValida) {
-            throw new RuntimeException("No se puede finalizar. El vehículo no se encuentra en viaje.");
+            // Refactorizado a InvalidVehicleStateException
+            throw new InvalidVehicleStateException("No se puede finalizar. El vehículo no se encuentra en viaje.");
         }
 
-        // Aplicación del Patrón Strategy para el cálculo económico
         double costoFinal = estrategia.calcularCosto(vehiculo.getTarifaFijaBase(), minutos);
 
         return new AlquilerResponseDTO(
